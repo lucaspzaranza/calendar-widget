@@ -1,0 +1,81 @@
+import type { CalendarEvent } from '../types'
+
+const MONTHS_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+
+const COLOR_MAP: Record<string, string> = {
+  purple: '#a78bfa', blue: '#60a5fa',
+  green: '#34d399', amber: '#fbbf24', rose: '#fb7185'
+}
+
+interface Props {
+  date: Date
+  events: CalendarEvent[]
+  onAdd: () => void
+  onEdit: (e: CalendarEvent) => void
+  onDelete: (id: string) => void
+}
+
+export default function EventPanel({ date, events, onAdd, onEdit, onDelete }: Props) {
+  const today = new Date()
+  const isToday = date.toDateString() === today.toDateString()
+  const label = isToday ? 'Hoje' : `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`
+
+  return (
+    <div className="glass-panel" style={{ width: 200, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 500 }}>{label}</span>
+        <button onClick={onAdd} style={{
+          background: 'rgba(139,92,246,0.3)',
+          border: '1px solid rgba(139,92,246,0.5)',
+          color: '#c4b5fd', fontSize: 11, padding: '4px 10px',
+          borderRadius: 8, cursor: 'pointer',
+        }}>
+          + Evento
+        </button>
+      </div>
+
+      {events.length === 0 ? (
+        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', paddingTop: 20 }}>
+          Nenhum evento
+        </span>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, overflowY: 'auto', maxHeight: 280 }}>
+          {events.map(e => (
+            <div key={e.id} className="event-card" style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 12, padding: '9px 10px',
+              display: 'flex', gap: 9, alignItems: 'flex-start',
+              cursor: 'pointer'
+            }}>
+              <div style={{
+                width: 3, borderRadius: 2, alignSelf: 'stretch',
+                background: COLOR_MAP[e.color] ?? '#a78bfa', flexShrink: 0
+              }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: '#f1f5f9', fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {e.title}
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 2 }}>
+                  {e.time}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                <button onClick={() => onEdit(e)} style={iconBtn} title="Editar">✎</button>
+                <button onClick={() => onDelete(e.id)} style={iconBtn} title="Excluir">✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const iconBtn: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.08)',
+  border: 'none', color: 'rgba(255,255,255,0.5)',
+  width: 22, height: 22, borderRadius: 6,
+  cursor: 'pointer', fontSize: 11,
+  display: 'flex', alignItems: 'center', justifyContent: 'center'
+}
