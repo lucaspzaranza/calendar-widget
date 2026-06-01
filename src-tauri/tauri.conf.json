@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "calendar-widget",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "br.com.lucaszaranza.calendarwidget",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -15,7 +15,7 @@
         "label": "main",
         "title": "Calendar Widget",
         "width": 490,
-        "height": 370,
+        "height": 700,
         "x": 40,
         "y": 40,
         "resizable": true,

@@ -13,25 +13,22 @@ interface Props {
   onAdd: () => void
   onEdit: (e: CalendarEvent) => void
   onDelete: (id: string) => void
+  onClose: () => void
 }
 
-export default function EventPanel({ date, events, onAdd, onEdit, onDelete }: Props) {
+export default function EventPanel({ date, events, onAdd, onEdit, onDelete, onClose }: Props) {
   const today = new Date()
   const isToday = date.toDateString() === today.toDateString()
   const label = isToday ? 'Hoje' : `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`
 
   return (
-    <div className="glass-panel" style={{ width: 200, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="glass-panel" style={{ WebkitAppRegion: 'no-drag' as any, width: 256, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 500 }}>{label}</span>
-        <button onClick={onAdd} style={{
-          background: 'rgba(139,92,246,0.3)',
-          border: '1px solid rgba(139,92,246,0.5)',
-          color: '#c4b5fd', fontSize: 11, padding: '4px 10px',
-          borderRadius: 8, cursor: 'pointer',
-        }}>
-          + Evento
-        </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={onAdd} style={addBtnStyle}>+ Evento</button>
+          <button onClick={onClose} style={closeBtnStyle}>✕</button>
+        </div>
       </div>
 
       {events.length === 0 ? (
@@ -39,17 +36,17 @@ export default function EventPanel({ date, events, onAdd, onEdit, onDelete }: Pr
           Nenhum evento
         </span>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, overflowY: 'auto', maxHeight: 280 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, overflowY: 'auto', maxHeight: 280, WebkitAppRegion: 'no-drag' as any }}>
           {events.map(e => (
             <div key={e.id} className="event-card" style={{
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 12, padding: '9px 10px',
               display: 'flex', gap: 9, alignItems: 'flex-start',
-              cursor: 'pointer'
+              cursor: 'pointer', marginRight: '10px'
             }}>
               <div style={{
-                width: 3, borderRadius: 2, alignSelf: 'stretch',
+                width: 5, borderRadius: 2, alignSelf: 'stretch',
                 background: COLOR_MAP[e.color] ?? '#a78bfa', flexShrink: 0
               }} />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -78,4 +75,20 @@ const iconBtn: React.CSSProperties = {
   width: 22, height: 22, borderRadius: 6,
   cursor: 'pointer', fontSize: 11,
   display: 'flex', alignItems: 'center', justifyContent: 'center'
+}
+
+const addBtnStyle: React.CSSProperties = {
+  background: 'rgba(139,92,246,0.3)',
+  border: '1px solid rgba(139,92,246,0.5)',
+  color: '#c4b5fd', fontSize: 11, padding: '4px 10px',
+  borderRadius: 8, cursor: 'pointer'
+}
+
+const closeBtnStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.08)',
+  border: '1px solid rgba(255,255,255,0.15)',
+  color: 'rgba(255,255,255,0.5)', fontSize: 11,
+  width: 24, height: 24, borderRadius: 8,
+  cursor: 'pointer', display: 'flex',
+  alignItems: 'center', justifyContent: 'center'
 }

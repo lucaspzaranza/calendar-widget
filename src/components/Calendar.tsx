@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { CalendarEvent } from '../types'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
@@ -54,16 +55,25 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <button onClick={() => changeMonth(-1)} style={navBtn}>‹</button>
-        <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 500, letterSpacing: '.4px' }}>
+        <span style={{ color: '#fff', fontSize: 14, fontWeight: 500, letterSpacing: '.4px' }}>
           {MONTHS[cursor.m]} {cursor.y}
         </span>
-        <button onClick={() => changeMonth(1)} style={navBtn}>›</button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={() => changeMonth(1)} style={navBtn}>›</button>
+          <button onClick={() => {
+              console.log('fechando...')
+              getCurrentWindow().close()
+            }} style={{ ...navBtn, color: 'rgba(255,255,255,0.4)', fontSize: 13 }}
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       {/* day-of-week header */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 6 }}>
         {DAYS.map(d => (
-          <span key={d} style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, textAlign: 'center', fontWeight: 600 }}>{d}</span>
+          <span key={d} style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, textAlign: 'center', fontWeight: 600 }}>{d}</span>
         ))}
       </div>
 
@@ -95,7 +105,7 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
               }}
             >
               <span style={{
-                fontSize: 11, fontWeight: isToday(date) ? 700 : 400,
+                fontSize: 11, fontWeight: isToday(date) ? 800 : 600,
                 color: other ? 'rgba(255,255,255,0.2)' : isToday(date) ? '#fff' : 'rgba(255,255,255,0.75)'
               }}>
                 {date.getDate()}
@@ -105,7 +115,8 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
                   {dots.map((e, i) => (
                     <span key={i} style={{
                       width: 3, height: 3, borderRadius: '50%',
-                      background: COLOR_MAP[e.color] ?? '#a78bfa'
+                      background: COLOR_MAP[e.color] ?? '#a78bfa',
+                      color: other ? 'rgba(255,255,255,0.2)' : isToday(date) ? '#fff' : '#e2e8f0'
                     }} />
                   ))}
                 </div>

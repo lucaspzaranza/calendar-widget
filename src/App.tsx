@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Calendar from './components/Calendar'
 import EventPanel from './components/EventPanel'
 import EventModal from './components/EventModal'
 import { useEvents } from './hooks/useEvents'
 import type { CalendarEvent } from './types'
+import { enable, isEnabled } from '@tauri-apps/plugin-autostart'
 import './App.css'
 
 export default function App() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [modalOpen, setModalOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
-  const { events, addEvent, editEvent, deleteEvent, getEvents, hasEvents } = useEvents()
+  const { addEvent, editEvent, deleteEvent, getEvents, hasEvents } = useEvents()
+  const [showPanel, setShowPanel] = useState(false)
 
   function handleSave(data: Omit<CalendarEvent, 'id'>) {
     if (editingEvent) {
@@ -21,31 +23,35 @@ export default function App() {
     setModalOpen(false)
     setEditingEvent(null)
   }
-
-  function handleEdit(event: CalendarEvent) {
-    setEditingEvent(event)
-    setModalOpen(true)
+  
+  function handleSelectDate(date: Date) {
+    setSelectedDate(date)
+    setShowPanel(true)
   }
 
-  function handleNewEvent() {
-    setEditingEvent(null)
-    setModalOpen(true)
-  }
+  useEffect(() => {
+    isEnabled().then((enabled:boolean) => {
+      if (!enabled) enable()
+    })
+  }, [])
 
   return (
     <div className="widget-container">
       <Calendar
         selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
+        onSelectDate={handleSelectDate}
         hasEvents={hasEvents}
       />
-      <EventPanel
-        date={selectedDate}
-        events={getEvents(selectedDate)}
-        onAdd={handleNewEvent}
-        onEdit={handleEdit}
-        onDelete={(id) => deleteEvent(selectedDate, id)}
-      />
+      {showPanel && (
+        <EventPanel
+          date={selectedDate}
+          events={getEvents(selectedDate)}
+          onAdd={() => { setEditingEvent(null); setModalOpen(true) }}
+          onEdit={e => { setEditingEvent(e); setModalOpen(true) }}
+          onDelete={id => deleteEvent(selectedDate, id)}
+          onClose={() => setShowPanel(false)}
+        />
+      )}
       {modalOpen && (
         <EventModal
           initialData={editingEvent}
