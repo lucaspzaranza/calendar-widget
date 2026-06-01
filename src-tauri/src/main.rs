@@ -44,7 +44,7 @@ fn main() {
           #[cfg(target_os = "windows")]
           {
               let hwnd = window.hwnd().unwrap().0 as isize;
-              set_always_on_bottom(hwnd);
+            //   set_always_on_bottom(hwnd);
           }
 
           // Menu do tray
@@ -65,7 +65,7 @@ fn main() {
                       #[cfg(target_os = "windows")]
                       {
                           let hwnd = w.hwnd().unwrap().0 as isize;
-                          set_always_on_bottom(hwnd);
+                          //set_always_on_bottom(hwnd);
                       }
                   }
               }
@@ -93,7 +93,7 @@ fn main() {
                           #[cfg(target_os = "windows")]
                           {
                               let hwnd = w.hwnd().unwrap().0 as isize;
-                              set_always_on_bottom(hwnd);
+                              //set_always_on_bottom(hwnd);
                           }
                       }
                   }
