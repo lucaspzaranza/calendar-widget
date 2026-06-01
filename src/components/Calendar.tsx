@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CalendarEvent } from '../types'
-import { getCurrentWindow } from '@tauri-apps/api/window'
+// import { Window } from '@tauri-apps/api/window'
+import { invoke } from '@tauri-apps/api/core'
 
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
@@ -20,6 +21,7 @@ interface Props {
 export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Props) {
   const today = new Date()
   const [cursor, setCursor] = useState({ y: today.getFullYear(), m: today.getMonth() })
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null)
 
   const first = new Date(cursor.y, cursor.m, 1)
   const last = new Date(cursor.y, cursor.m + 1, 0)
@@ -55,15 +57,16 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <button onClick={() => changeMonth(-1)} style={navBtn}>‹</button>
-        <span style={{ color: '#fff', fontSize: 14, fontWeight: 500, letterSpacing: '.4px' }}>
+        <span style={{ color: '#fff', fontWeight: 500, letterSpacing: '.4px' }}>
           {MONTHS[cursor.m]} {cursor.y}
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => changeMonth(1)} style={navBtn}>›</button>
           <button onClick={() => {
               console.log('fechando...')
-              getCurrentWindow().close()
-            }} style={{ ...navBtn, color: 'rgba(255,255,255,0.4)', fontSize: 13 }}
+              // Window.getCurrent().close()
+              invoke('close_app')
+            }} style={{ ...navBtn, fontSize: 'inherit', color: 'rgba(255,255,255,0.4)' }}
           >
             ✕
           </button>
@@ -73,7 +76,7 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
       {/* day-of-week header */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 6 }}>
         {DAYS.map(d => (
-          <span key={d} style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, textAlign: 'center', fontWeight: 600 }}>{d}</span>
+          <span key={d} style={{ color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontWeight: 600 }}>{d}</span>
         ))}
       </div>
 
@@ -82,15 +85,20 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
         {cells.map(({ date, other }, idx) => {
           const evs = other ? [] : hasEvents(date)
           const dots = evs.slice(0, 3)
+          const isHovered = hoveredDate === date.toDateString()
+
           return (
             <div
               key={idx}
               onClick={() => !other && onSelectDate(date)}
+              onMouseEnter={() => !other && evs.length > 0 && setHoveredDate(date.toDateString())}
+              onMouseLeave={() => setHoveredDate(null)}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 justifyContent: 'flex-start', gap: 2,
                 padding: '5px 2px', borderRadius: 8, cursor: other ? 'default' : 'pointer',
                 minHeight: 34,
+                position: 'relative',
                 background: isToday(date)
                   ? 'rgba(139,92,246,0.45)'
                   : isSel(date) && !other
@@ -105,19 +113,53 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
               }}
             >
               <span style={{
-                fontSize: 11, fontWeight: isToday(date) ? 800 : 600,
+                fontWeight: isToday(date) ? 800 : 600,
                 color: other ? 'rgba(255,255,255,0.2)' : isToday(date) ? '#fff' : 'rgba(255,255,255,0.75)'
               }}>
                 {date.getDate()}
               </span>
+
               {dots.length > 0 && (
                 <div style={{ display: 'flex', gap: 2 }}>
                   {dots.map((e, i) => (
                     <span key={i} style={{
                       width: 3, height: 3, borderRadius: '50%',
-                      background: COLOR_MAP[e.color] ?? '#a78bfa',
-                      color: other ? 'rgba(255,255,255,0.2)' : isToday(date) ? '#fff' : '#e2e8f0'
+                      background: COLOR_MAP[e.color] ?? '#a78bfa'
                     }} />
+                  ))}
+                </div>
+              )}
+
+              {/* popup hover */}
+              {isHovered && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '110%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(20, 16, 50, 0.95)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 10,
+                  padding: '8px 10px',
+                  zIndex: 100,
+                  minWidth: 150,
+                  pointerEvents: 'none',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                }}>
+                  {evs.map((e, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      marginBottom: i < evs.length - 1 ? 5 : 0
+                    }}>
+                      <span style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: COLOR_MAP[e.color], flexShrink: 0
+                      }} />
+                      <span style={{ color: '#e2e8f0', fontSize: 11, whiteSpace: 'nowrap' }}>
+                        {e.time} — {e.title}
+                      </span>
+                    </div>
                   ))}
                 </div>
               )}
@@ -130,9 +172,10 @@ export default function Calendar({ selectedDate, onSelectDate, hasEvents }: Prop
 }
 
 const navBtn: React.CSSProperties = {
+  fontWeight: 'bold',
   background: 'rgba(255,255,255,0.08)',
   border: '1px solid rgba(255,255,255,0.15)',
   color: '#e2e8f0', width: 26, height: 26,
-  borderRadius: 7, cursor: 'pointer', fontSize: 16,
+  borderRadius: 7, cursor: 'pointer', fontSize: 20,
   display: 'flex', alignItems: 'center', justifyContent: 'center'
 }

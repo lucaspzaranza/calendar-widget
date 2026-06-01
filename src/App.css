@@ -10,6 +10,10 @@ html, body {
   padding: 0;
 }
 
+* {
+  font-size: inherit;
+}
+
 body {
   background: transparent;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -33,19 +37,11 @@ button, input, select {
   -webkit-app-region: no-drag;
 }
 
-/* .glass-panel {
+.glass-panel {
   background: rgba(15, 12, 41, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 2px solid rgba(255, 255, 255, 0.7);
-  border-radius: 20px;
-} */
-
-.glass-panel {
-  background: rgba(20, 16, 50, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 20px;
 }
 
